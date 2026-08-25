@@ -1,0 +1,97 @@
+name: Build and release ChemBalance Desktop
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test core (${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run core test suite
+        run: python -m unittest -v
+
+  build-windows:
+    name: Build Windows executable
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install desktop dependencies
+        run: python -m pip install --upgrade pip -r requirements.txt
+      - name: Run desktop smoke test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python ui_smoke_test.py
+      - name: Package ChemBalance.exe
+        run: >-
+          python -m PyInstaller --noconfirm --clean --windowed
+          --name ChemBalance app.py
+      - name: Create distributable archive and checksum
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/ChemBalance/* -DestinationPath dist/ChemBalance-windows-x64.zip -Force
+          (Get-FileHash dist/ChemBalance-windows-x64.zip -Algorithm SHA256).Hash.ToLower() + "  ChemBalance-windows-x64.zip" |
+            Out-File -Encoding ascii dist/ChemBalance-windows-x64.zip.sha256
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChemBalance-windows-x64
+          path: |
+            dist/ChemBalance-windows-x64.zip
+            dist/ChemBalance-windows-x64.zip.sha256
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: ChemBalance-windows-x64
+          path: dist
+      - name: Publish release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            ## ChemBalance Desktop
+
+            This release contains the Windows desktop application for exact chemical-equation balancing.
+
+            ### Installation
+
+            1. Download `ChemBalance-windows-x64.zip` and compare it with the supplied SHA-256 checksum if required.
+            2. Extract the archive to a writable folder.
+            3. Run `ChemBalance.exe`.
+
+            ChemBalance is a local-first educational and productivity tool. A mathematically balanced equation does not independently establish chemical feasibility, hazards, or safe operating conditions.
+          files: |
+            dist/ChemBalance-windows-x64.zip
+            dist/ChemBalance-windows-x64.zip.sha256
