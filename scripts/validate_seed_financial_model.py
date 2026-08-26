@@ -25,7 +25,8 @@ def main() -> int:
     assert pnl["D9"].value == "='Revenue Build'!D37", "P&L revenue must link to revenue build."
     assert pnl["D25"].value == "=D24+D21+D23", "Ending cash must roll from cash flow and financing."
     assert funds["D15"].value == "=SUM(D9:D13)", "Use-of-funds allocation must sum by formula."
-    assert scenarios["E10"].value == "='Revenue Build'!F37*D10", "Scenario revenue must link to base case."
+    assert scenarios["E10"].value == "='Revenue Build'!F37*D10", "Scenario revenue must link to the base case."
+    assert scenarios["F10"].value == "='P&L & Cash'!F25+(SUM('Revenue Build'!D37:F37)*D10-SUM('Revenue Build'!D37:F37))*0.91", "Scenario cash must stress acquisition across the full forecast."
     assert MODEL.stat().st_size > 10_000, "Workbook is unexpectedly small."
     print("Seed financial model structural checks passed.")
     return 0

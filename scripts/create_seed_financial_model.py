@@ -276,14 +276,14 @@ def make_scenarios(wb: Workbook) -> None:
         ws.cell(row, 5, f"='Revenue Build'!F37*D{row}").font = LINK_FONT
         ws.cell(row, 5).number_format = CURRENCY
         # Expenses stay at base plan; this makes the sensitivity explicit rather than hiding cost changes.
-        ws.cell(row, 6, f"='P&L & Cash'!F25+('Revenue Build'!F37*D{row}-'Revenue Build'!F37)*0.91").font = LINK_FONT
+        ws.cell(row, 6, f"='P&L & Cash'!F25+(SUM('Revenue Build'!D37:F37)*D{row}-SUM('Revenue Build'!D37:F37))*0.91").font = LINK_FONT
         ws.cell(row, 6).number_format = CURRENCY
         ws.cell(row, 7, interpretation)
         if name == "Base":
             for column in range(3, 8):
                 ws.cell(row, column).fill = GRAY_FILL
     add_section(ws, 14, "Scenario interpretation", 7)
-    ws["C15"] = "The downside / base / upside cases vary only customer acquisition. Product costs, headcount, and pricing remain at base assumptions so decision-makers can see commercial sensitivity clearly."
+    ws["C15"] = "The downside / base / upside cases vary customer acquisition across all three forecast years. Product costs, headcount, and pricing remain at base assumptions so decision-makers can see commercial sensitivity clearly."
     ws.merge_cells("C15:G16")
     ws["C15"].alignment = Alignment(wrap_text=True, vertical="top")
     ws.print_area = "B2:G16"
