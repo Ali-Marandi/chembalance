@@ -67,16 +67,15 @@ QT_QPA_PLATFORM=offscreen python ui_smoke_test.py
 The release workflow builds Windows packages on a native `windows-latest` runner. To package locally on Windows, install the dependencies and run:
 
 ```powershell
-python -m PyInstaller --noconfirm --clean --windowed --name ChemBalance app.py
-Compress-Archive -Path dist/ChemBalance/* -DestinationPath dist/ChemBalance-windows-x64.zip -Force
-Get-FileHash dist/ChemBalance-windows-x64.zip -Algorithm SHA256
+python scripts/package_desktop.py --platform windows-x64
+Get-FileHash dist/release/ChemBalance-windows-x64.zip -Algorithm SHA256
 ```
 
 The resulting folder is self-contained; distribute the ZIP archive instead of the executable alone.
 
 ## Release process
 
-The workflow at [`.github/workflows/windows-release.yml`](.github/workflows/windows-release.yml) runs the core suite across Python 3.10–3.13, performs a desktop smoke test, and packages the Windows application. Pushing a tag beginning with `v` publishes the ZIP archive and its SHA-256 checksum to GitHub Releases.
+The workflow at [`.github/workflows/desktop-release.yml`](.github/workflows/desktop-release.yml) runs the core suite across Python 3.10–3.13, performs a desktop smoke test, and builds native Windows, macOS Intel, macOS Apple Silicon, and Linux packages. Pushing a tag beginning with `v` publishes all platform archives and their SHA-256 checksums to GitHub Releases. See the [build and release automation guide](docs/BUILD_AND_RELEASE_AUTOMATION.md) for the release process and code-signing roadmap.
 
 ```bash
 git tag v1.0.0
