@@ -2,6 +2,15 @@
 
 All notable changes to ChemBalance are documented in this file.
 
+## [1.1.1] — 2026-08-28
+
+ChemBalance 1.1.1 fixes the Linux release environment for the interactive analysis workspace.
+
+| Area | Delivered improvements |
+| --- | --- |
+| Linux CI | Installs the `libegl1` runtime dependency before the headless PySide6 smoke test, keeping the native Linux release pipeline compatible with the chart workspace. |
+| Versioning | Aligns the desktop application version with the corrected cross-platform release workflow. |
+
 ## [1.1.0] — 2026-08-28
 
 ChemBalance 1.1 extends the desktop workbench with an interactive, traceable stoichiometry analysis workspace.
