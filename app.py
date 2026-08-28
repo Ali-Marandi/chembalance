@@ -45,6 +45,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from analysis_workspace import AnalysisWorkspace
 from chembalance import BalanceResult, ChemBalanceError, balance_equation
 
 APP_NAME = "ChemBalance"
@@ -202,9 +203,11 @@ class ChemBalanceWindow(QMainWindow):
         sidebar_layout.addSpacing(10)
 
         self.workspace_nav = self._add_nav_button("Balance equation", QStyle.StandardPixmap.SP_ArrowForward, 0)
-        self.history_nav = self._add_nav_button("History", QStyle.StandardPixmap.SP_FileDialogDetailedView, 1)
-        self.about_nav = self._add_nav_button("About & syntax", QStyle.StandardPixmap.SP_MessageBoxInformation, 2)
+        self.analysis_nav = self._add_nav_button("Analysis & charts", QStyle.StandardPixmap.SP_FileDialogContentsView, 1)
+        self.history_nav = self._add_nav_button("History", QStyle.StandardPixmap.SP_FileDialogDetailedView, 2)
+        self.about_nav = self._add_nav_button("About & syntax", QStyle.StandardPixmap.SP_MessageBoxInformation, 3)
         sidebar_layout.addWidget(self.workspace_nav)
+        sidebar_layout.addWidget(self.analysis_nav)
         sidebar_layout.addWidget(self.history_nav)
         sidebar_layout.addWidget(self.about_nav)
         self.workspace_nav.setChecked(True)
@@ -267,6 +270,8 @@ class ChemBalanceWindow(QMainWindow):
         self.pages = QStackedWidget()
         self.pages.setObjectName("pages")
         self.pages.addWidget(self._build_workspace_page())
+        self.analysis_workspace = AnalysisWorkspace()
+        self.pages.addWidget(self.analysis_workspace)
         self.pages.addWidget(self._build_history_page())
         self.pages.addWidget(self._build_about_page())
         content_layout.addWidget(self.pages, 1)
@@ -556,14 +561,15 @@ class ChemBalanceWindow(QMainWindow):
             button.setChecked(number == index)
         page_metadata = {
             0: ("CHEMICAL EQUATION WORKBENCH", "Balance with certainty.", "Exact coefficients, transparent verification, and no floating-point rounding."),
-            1: ("LOCAL WORKSPACE", "Your calculation history.", "Review previous equations without sending them anywhere."),
-            2: ("REFERENCE", "Know the notation.", "A concise guide to supported input, exact solving, and responsible use."),
+            1: ("STOICHIOMETRY WORKSPACE", "Trace every calculation.", "Analyze elemental composition and mass flow from exact balanced equations."),
+            2: ("LOCAL WORKSPACE", "Your calculation history.", "Review previous equations without sending them anywhere."),
+            3: ("REFERENCE", "Know the notation.", "A concise guide to supported input, exact solving, and responsible use."),
         }
         kicker, title, description = page_metadata[index]
         self.page_kicker.setText(kicker)
         self.page_title.setText(title)
         self.page_description.setText(description)
-        if index == 1:
+        if index == 2:
             self._refresh_history()
 
     def _on_input_changed(self) -> None:
@@ -588,15 +594,18 @@ class ChemBalanceWindow(QMainWindow):
         except ChemBalanceError as error:
             self._show_error(str(error))
             self.current_result = None
+            self.analysis_workspace.set_balance_result(None)
             self.copy_button.setEnabled(False)
             self.export_button.setEnabled(False)
             return
         except Exception as error:  # Defensive UI boundary; detailed internals should not reach an end user.
             self._show_error(f"ChemBalance could not process this equation: {error}")
             self.current_result = None
+            self.analysis_workspace.set_balance_result(None)
             return
 
         self.current_result = result
+        self.analysis_workspace.set_balance_result(result)
         self.result_equation.setText(result.balanced_equation)
         self.result_explanation.setText(result.explanation)
         self.input_status.setText("Balanced successfully — all constraints match.")
@@ -719,6 +728,7 @@ class ChemBalanceWindow(QMainWindow):
         self.export_button.setEnabled(False)
         self.verification_table.setRowCount(0)
         self.stoichiometry_table.setRowCount(0)
+        self.analysis_workspace.set_balance_result(None)
         self.equation_input.setFocus()
 
     def _show_error(self, message: str) -> None:
@@ -794,6 +804,9 @@ class ChemBalanceWindow(QMainWindow):
             #mutedCaption {{ color: {colors['muted']}; font-size: 11px; }}
             #equationInput {{ background: {colors['input']}; color: {colors['text']}; border: 1px solid {colors['border']}; border-radius: 9px; padding: 11px; font-family: 'Cascadia Mono', 'Consolas', monospace; font-size: 16px; selection-background-color: {colors['accent']}; }}
             #equationInput:focus {{ border: 2px solid {colors['accent']}; padding: 10px; }}
+            #analysisInput, #analysisCombo {{ background: {colors['input']}; color: {colors['text']}; border: 1px solid {colors['border']}; border-radius: 8px; padding: 8px 10px; font-size: 12px; }}
+            #analysisInput:focus, #analysisCombo:focus {{ border: 2px solid {colors['accent']}; padding: 7px 9px; }}
+            #analysisSteps {{ color: {colors['text']}; background: {colors['input']}; border: 1px solid {colors['border']}; border-radius: 9px; padding: 14px; font-family: 'Cascadia Mono', 'Consolas', monospace; font-size: 11px; line-height: 1.45; }}
             #inputStatus {{ color: {colors['muted']}; font-size: 11px; }}
             #inputStatus[state='success'] {{ color: {colors['accent']}; font-weight: 600; }}
             #inputStatus[state='error'] {{ color: {colors['danger']}; font-weight: 600; }}

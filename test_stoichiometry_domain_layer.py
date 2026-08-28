@@ -12,7 +12,7 @@ EXAMPLES = ROOT / "examples"
 if str(EXAMPLES) not in sys.path:
     sys.path.insert(0, str(EXAMPLES))
 
-from stoichiometry_domain_layer import (  # noqa: E402
+from stoichiometry_analysis import (  # noqa: E402
     DomainValidationError,
     analyze_elemental_composition,
     convert_mass_to_mass,
