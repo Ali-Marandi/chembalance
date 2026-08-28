@@ -49,7 +49,7 @@ from analysis_workspace import AnalysisWorkspace
 from chembalance import BalanceResult, ChemBalanceError, balance_equation
 
 APP_NAME = "ChemBalance"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 
 EXAMPLES = {
     "Water formation": "H2 + O2 -> H2O",

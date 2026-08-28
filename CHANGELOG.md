@@ -2,6 +2,19 @@
 
 All notable changes to ChemBalance are documented in this file.
 
+## [1.1.0] — 2026-08-28
+
+ChemBalance 1.1 extends the desktop workbench with an interactive, traceable stoichiometry analysis workspace.
+
+| Area | Delivered improvements |
+| --- | --- |
+| Analysis workspace | A new **Analysis & charts** desktop page for formula validation, elemental mass-composition tables, interactive composition charts, and mass-flow charts. |
+| Scientific domain layer | UI-independent `Decimal`-based composition and mass-to-mass services, with explicit units, formula/charge matching, calculation steps, and actionable validation errors. |
+| Product quality | Extended headless UI coverage, full regression testing, and packaging support for the Matplotlib Qt/Agg renderers used by the analysis workspace. |
+| Distribution | Native release bundles continue to be built on the target platform; this release includes updated executable assets and SHA-256 integrity files. |
+
+> ChemBalance is a mathematical conservation and stoichiometry tool. It does not determine chemical feasibility, product identity, purity, safety, or reaction conditions.
+
 ## [1.0.0] — 2026-08-26
 
 ChemBalance 1.0 introduces the first Windows desktop workbench for exact chemical-equation balancing.
